@@ -1,0 +1,80 @@
+{
+  "research_question": "Sensitivity to blur-kernel mismatch at fixed noise",
+  "data_source": "/Users/eric_zcz/Desktop/CI final project/data/images",
+  "validation_image": "100007",
+  "test_images": [
+    "100039",
+    "100099",
+    "10081",
+    "101027",
+    "101084",
+    "102062",
+    "103006",
+    "103029",
+    "103078",
+    "104010",
+    "104055",
+    "105027",
+    "106005",
+    "106047",
+    "107014",
+    "107045",
+    "107072",
+    "108004",
+    "108036",
+    "108069"
+  ],
+  "image_size": 256,
+  "noise_sigma": 0.03,
+  "random_seed": 2026,
+  "stage": "preliminary project-update experiment",
+  "known_limitations": [
+    "one validation image rather than a multi-image validation set",
+    "fixed ADMM rho and iteration count rather than residual-based stopping",
+    "one qualitative example per mismatch type without matched crops or intensity profiles"
+  ],
+  "true_gaussian_kernel": {
+    "size": 9,
+    "sigma": 1.6
+  },
+  "assumed_gaussian_sigmas": [
+    1.28,
+    1.44,
+    1.6,
+    1.76,
+    1.92
+  ],
+  "true_motion_kernel": {
+    "size": 21,
+    "length": 15,
+    "angle_degrees": 30.0
+  },
+  "assumed_motion_lengths": [
+    12,
+    14,
+    15,
+    17,
+    18
+  ],
+  "assumed_motion_angles_degrees": [
+    20,
+    25,
+    30,
+    35,
+    40
+  ],
+  "rho": 0.1,
+  "max_iter": 100,
+  "selected_parameters_with_correct_kernel": {
+    "gaussian": {
+      "inverse": 0.03,
+      "wiener": 0.1,
+      "tv_admm": 0.01
+    },
+    "motion": {
+      "inverse": 0.03,
+      "wiener": 0.3,
+      "tv_admm": 0.01
+    }
+  }
+}

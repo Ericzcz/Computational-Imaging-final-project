@@ -1,0 +1,78 @@
+\documentclass[10pt,letterpaper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage[left=0.50in,right=0.50in,top=0.40in,bottom=0.40in]{geometry}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{accent}{HTML}{000000}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2pt}
+\setlength{\abovedisplayskip}{2.5pt}
+\setlength{\belowdisplayskip}{2.5pt}
+\setlist[itemize]{leftmargin=1.15em,itemsep=1pt,topsep=2pt,parsep=0pt}
+\pagestyle{empty}
+
+\newcommand{\sectiontitle}[1]{%
+  \vspace{2pt}\textcolor{accent}{\fontsize{10.8}{12.2}\selectfont\bfseries #1}\par\vspace{-1pt}%
+}
+
+\begin{document}
+
+\begin{center}
+  {\fontsize{15.8}{17.6}\selectfont\bfseries TV-Regularized Image Deblurring Using ADMM}\\[5pt]
+  \fontsize{7.9}{9.5}\selectfont
+  \textbf{Course:} EN.520.658/458 Computational Imaging \quad
+  \textbf{Instructor:} Prof. Yu Sun\\[-1pt]
+  \textbf{Team Members: Xiyi Mao, Chengzha Zhou, Doreen Luo} 
+\end{center}
+
+\fontsize{9.5}{11}\selectfont
+
+
+\sectiontitle{Abstract}
+This project will evaluate total variation (TV) regularization for non-blind image deblurring using the alternating direction method of multipliers (ADMM). We will compare TV-ADMM with stabilized inverse filtering and Wiener-Hunt deconvolution on BSDS500 images degraded by Gaussian or motion blur and additive Gaussian noise. Experiments will vary noise levels and reconstruction-kernel accuracy, using separate validation and test sets. PSNR, SSIM, runtime, and visual analysis will assess reconstruction quality, computational cost, and trade-offs among edge preservation, texture recovery, and artifacts. The goal is to characterize when TV-ADMM offers a practical advantage over the baseline methods.
+
+\sectiontitle{Introduction}
+Recovering sharp images from blurred, noisy measurements is ill-conditioned: direct inversion can strongly amplify noise. Stabilized inverse filtering reduces this amplification but can suppress image detail. Wiener-Hunt deconvolution uses quadratic regularization, which can smooth edges and depends on the assumed blur and regularization strength. TV instead favors sparse image gradients, providing an edge-preserving alternative (Rudin et al., 1992). We will investigate how these methods compare as noise increases and the assumed blur kernel deviates from the true kernel.
+
+\sectiontitle{Model and Methodology}
+ The forward imaging model and reconstruction objective are
+\[
+  \mathbf{y}=\mathbf{H}\mathbf{x}+\mathbf{n},
+  \qquad
+  \widehat{\mathbf{x}}=
+  \arg\min_{\mathbf{x}}
+  \frac{1}{2}\lVert\mathbf{H}\mathbf{x}-\mathbf{y}\rVert_2^2
+  +\lambda\lVert\mathbf{D}\mathbf{x}\rVert_{2,1},
+\]
+Here $\mathbf{x}$ is the sharp image, $\mathbf{H}$ the blur operator, $\mathbf{n}$ additive white Gaussian noise, and $\mathbf{D}$ the horizontal and vertical gradient operator. Under a maximum a posteriori (MAP) interpretation, the squared-error term corresponds to the Gaussian likelihood and TV provides a sparse-gradient prior, with noise-variance scaling absorbed into $\lambda$. We use isotropic TV, $\lVert\mathbf{D}\mathbf{x}\rVert_{2,1}=\sum_i\sqrt{(D_h\mathbf{x})_i^2+(D_v\mathbf{x})_i^2}$, which treats gradient directions uniformly but can cause staircasing and texture loss. The parameter $\lambda$ balances data fidelity and regularization. Introducing $\mathbf{z}=\mathbf{D}\mathbf{x}$ yields ADMM iterations consisting of an image update, vector soft-thresholding of each pixel's gradient pair, and a dual update (Boyd et al., 2011). We will implement the solver with NumPy, SciPy, and scikit-image, use a public implementation for verification, and record objective values and primal and dual residuals to assess convergence.
+
+\sectiontitle{Experimental Plan}
+\begin{enumerate}[leftmargin=4.3em,label=\textbf{Step \arabic*:},labelsep=0.45em,itemsep=1pt,topsep=1pt,parsep=0pt]
+  \item \textbf{Prepare the data.} We will choose natural images from BSDS500 (Martin et al., 2001), convert them to grayscale, normalize them to $[0,1]$, and crop them to $256\times256$. A small validation set will be used for parameter choices, and a separate set of about 20--30 images will be used for the final tests.
+
+  \item \textbf{Create the blurred images.} For each clean image, we will apply both Gaussian blur and linear motion blur. We will then add zero-mean Gaussian noise with standard deviations $0.01$, $0.03$, and $0.05$. The blur kernel and random seed will be saved so every test can be repeated.
+
+  \item \textbf{Run the reconstruction methods.} For TV, stabilized inverse filtering, and Wiener-Hunt, we will tune $\lambda$, the stabilization parameter, and regularization strength, respectively, using the same validation set, predefined search budget, and mean validation PSNR criterion. The ADMM penalty $\rho$ will be chosen using convergence residuals and runtime. TV-ADMM runs will share primal and dual residual tolerances and an iteration limit. All parameters will be fixed for each setting before testing.
+
+  \item \textbf{Change the assumed blur kernel.} We will first reconstruct each image using the correct kernel. We will then repeat the test after changing the kernel width or motion length by about $10\%$ and $20\%$ relative to their true values, and introduce angular offsets for motion blur, with the offset magnitudes determined through preliminary experiments. The images and noise realizations will stay the same across methods.
+
+  \item \textbf{Compare the results.} We will report mean test-set PSNR, SSIM, and runtime, and compare the ground truth, degraded input, and all reconstructions on 2--3 representative images. Matched crops of edges, smooth transitions, and textures will assess ringing, staircasing, detail loss, and residual noise, with identical locations, magnification, and intensity ranges across methods. Crops will be marked on full images. Intensity profiles along the same lines will reveal edge sharpness, overshoot, and artificial plateaus. If resources permit, LPIPS will supplement perceptual evaluation (Zhang et al., 2018).
+\end{enumerate}
+
+\vspace{2pt}
+{\fontsize{8.5}{9.5}\selectfont
+\textbf{References.}\par
+\vspace{4pt}
+\hangindent=1.2em\hangafter=1 [1] Rudin, L. I., Osher, S., \& Fatemi, E. (1992). Nonlinear total variation based noise removal algorithms. \textit{Physica D: Nonlinear Phenomena, 60}(1--4), 259--268. \url{https://doi.org/10.1016/0167-2789(92)90242-F}\par\vspace{1pt}
+\hangindent=1.2em\hangafter=1 [2] Boyd, S., Parikh, N., Chu, E., Peleato, B., \& Eckstein, J. (2011). Distributed optimization and statistical learning via the alternating direction method of multipliers. \textit{Foundations and Trends in Machine Learning, 3}(1), 1--122. \url{https://doi.org/10.1561/2200000016}\par\vspace{1pt}
+\hangindent=1.2em\hangafter=1 [3] Martin, D., Fowlkes, C., Tal, D., \& Malik, J. (2001). A database of human segmented natural images and its application to evaluating segmentation algorithms and measuring ecological statistics. In \textit{Proceedings Eighth IEEE International Conference on Computer Vision} (Vol. 2, pp. 416--423). IEEE. \url{https://doi.org/10.1109/ICCV.2001.937655}\par\vspace{1pt}
+\hangindent=1.2em\hangafter=1 [4] Zhang, R., Isola, P., Efros, A. A., Shechtman, E., \& Wang, O. (2018). The unreasonable effectiveness of deep features as a perceptual metric. In \textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition} (pp. 586--595). \url{https://openaccess.thecvf.com/content_cvpr_2018/html/Zhang_The_Unreasonable_Effectiveness_CVPR_2018_paper.html}\par\vspace{1pt}
+}
+
+\end{document}
